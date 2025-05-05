@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
-
+// 插件实现默认全局导入注册
 // 1. 通过props来实现标题和右侧文字的设置
 const props = defineProps<{
   title?: string

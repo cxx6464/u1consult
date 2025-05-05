@@ -1,5 +1,8 @@
 <script setup lang="ts">
 /* global QC */
+
+// index.html文件中引入qc
+
 import { useMobileCode } from '@/composables'
 import { bindMobile, loginByQQ } from '@/services/user'
 import { useUserStore } from '@/stores'
@@ -8,12 +11,14 @@ import { codeRules, mobileRules } from '@/utils/rules'
 import { showSuccessToast } from 'vant'
 import { ref } from 'vue'
 import { onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 
 const openId = ref('')
 const isNeedBind = ref(false)
+// 使用qc检查登陆状态
 onMounted(() => {
   if (QC.Login.check()) {
+    // 获取openid并保存
     QC.Login.getMe((id: string) => {
       openId.value = id
       loginByQQ(id)
@@ -52,6 +57,9 @@ const bind = async () => {
   // 执行成功逻辑
   loginSuccess(res)
 }
+const route = useRoute()
+
+console.log('aaa', route.query.returnUrl)
 </script>
 
 <template>

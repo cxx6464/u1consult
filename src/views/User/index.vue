@@ -11,6 +11,8 @@ const user = ref<UserInfo>()
 onMounted(async () => {
   const res = await getUserInfo()
   user.value = res.data
+  user.value.avatar =
+    'https://tse1-mm.cn.bing.net/th/id/OIP-C.W-7FG9rikZ_ZC-Lo86eAnQAAAA?w=186&h=180&c=7&r=0&o=5&dpr=1.5&pid=1.7'
 })
 
 // 初始化快捷工具

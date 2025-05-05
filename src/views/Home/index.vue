@@ -79,7 +79,7 @@ const store = useConsultStore()
     </div>
     <!-- 轮播图 -->
     <div class="home-banner">
-      <van-swipe indicator-color="#fff">
+      <van-swipe indicator-color="#fff" autoplay="3000" lazy-render>
         <van-swipe-item>
           <img src="@/assets/ad.png" alt="" />
         </van-swipe-item>

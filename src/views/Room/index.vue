@@ -15,6 +15,7 @@ import { getConsultOrderDetail } from '@/services/consult'
 import dayjs from 'dayjs'
 import { showToast } from 'vant'
 
+// 初始化订单数据
 const consult = ref<ConsultOrderItem>()
 const loadConsult = async () => {
   const res = await getConsultOrderDetail(route.query.orderId as string)

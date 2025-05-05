@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    <meta charset="UTF-8" />
+    <title>排班表</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+      }
+      .hidden {
+        display: none;
+      }
+      #popup {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: white;
+        padding: 20px;
+        border: 1px solid black;
+        z-index: 1000;
+        width: 800px;
+        max-height: 600px;
+        overflow-y: auto;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+      }
+      table {
+        border-collapse: collapse;
+        margin-bottom: 20px;
+      }
+      th,
+      td {
+        border: 1px solid #ccc;
+        width: 100px;
+        height: 30px;
+        text-align: center;
+        cursor: pointer;
+      }
+      .tomato {
+        background-color: tomato;
+      }
+      .eee {
+        background-color: #eee;
+      }
+      h3 {
+        margin-top: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <table id="scheduleTable" border="1">
+        <!-- 表头 -->
+        <thead>
+          <tr>
+            <th>员工姓名</th>
+            <th onclick="toggleShift('周一')">周一</th>
+            <th onclick="toggleShift('周二')">周二</th>
+            <th onclick="toggleShift('周三')">周三</th>
+            <th onclick="toggleShift('周四')">周四</th>
+            <th onclick="toggleShift('周五')">周五</th>
+            <th onclick="toggleShift('周六')">周六</th>
+            <th onclick="toggleShift('周日')">周日</th>
+          </tr>
+        </thead>
+        <tbody id="scheduleBody">
+          <!-- 动态生成的行将插入到这里 -->
+        </tbody>
+        <tfoot>
+          <tr id="statsRow">
+            <td>人数统计</td>
+          </tr>
+        </tfoot>
+      </table>
+
+      <!-- 弹窗 -->
+      <div id="popup" class="hidden">
+        <h3 id="dayTitle"></h3>
+        <div id="popup-content"></div>
+        <br />
+        <button onclick="submitShift()">提交</button>
+        <button onclick="hidePopup()">关闭</button>
+      </div>
+    </div>
+
+    <script>
+      const workIntervals = [
+        "08:00-10:00",
+        "10:00-12:00",
+        "12:00-14:00",
+        "14:00-16:00",
+        "16:00-18:00",
+        "18:00-20:00",
+        "20:00-22:00",
+        "22:00-24:00",
+      ];
+
+      let scheduleData = {
+        张三: {
+          周一: "10:00-18:00",
+          周二: "",
+          周三: "14:00-20:00",
+          周四: "",
+          周五: "08:00-12:00",
+          周六: "",
+          周日: "",
+        },
+        李四: {
+          周一: "",
+          周二: "12:00-18:00",
+          周三: "",
+          周四: "16:00-20:00",
+          周五: "",
+          周六: "20:00-22:00",
+          周日: "18:00-20:00",
+        },
+        王五: {
+          周一: "08:00-12:00",
+          周二: "10:00-18:00",
+          周三: "",
+          周四: "",
+          周五: "14:00-20:00",
+          周六: "",
+          周日: "",
+        },
+      };
+
+      let currentDay = "";
+
+      function buildTable() {
+        const tbody = document.getElementById("scheduleBody");
+        for (let employee in scheduleData) {
+          let row = `<tr><td>${employee}</td>`;
+          for (let day in scheduleData[employee]) {
+            let cellClass = scheduleData[employee][day] ? "tomato" : "eee";
+            row += `<td class="${cellClass}" onclick="toggleShift('${employee}', '${day}')">${scheduleData[employee][day]}</td>`;
+          }
+          row += "</tr>";
+          tbody.innerHTML += row;
+        }
+      }
+
+      function toggleShift(employee, day) {
+        currentDay = day;
+        showPopup(day);
+      }
+
+      function showPopup(day) {
+        document.getElementById("dayTitle").innerText = `${day} 排班详情`;
+        renderPopup();
+        document.getElementById("popup").classList.remove("hidden");
+      }
+
+      function hidePopup() {
+        document.getElementById("popup").classList.add("hidden");
+      }
+
+      function submitShift() {
+        updateStats();
+        hidePopup();
+      }
+
+      function parseEmployeeShifts(str) {
+        return str
+          ? str
+              .split(",")
+              .map((s) => s.trim())
+              .filter(Boolean)
+          : [];
+      }
+
+      function formatShifts(arr) {
+        return arr.length > 0 ? arr.join(",") : "";
+      }
+
+      function toggleInterval(employee, day, interval) {
+        let shifts = parseEmployeeShifts(scheduleData[employee][day]);
+        const index = shifts.indexOf(interval);
+
+        if (index === -1) {
+          shifts.push(interval);
+        } else {
+          shifts.splice(index, 1);
+        }
+
+        scheduleData[employee][day] = formatShifts(shifts);
+        refreshTableCell(employee, day);
+        updateStats();
+        renderPopup(); // 刷新弹窗内容
+      }
+
+      function refreshTableCell(employee, day) {
+        const rows = document.querySelectorAll("#scheduleTable tbody tr");
+        rows.forEach((row) => {
+          const nameCell = row.querySelector("td");
+          if (nameCell && nameCell.textContent === employee) {
+            const days = [
+              "周一",
+              "周二",
+              "周三",
+              "周四",
+              "周五",
+              "周六",
+              "周日",
+            ];
+            days.forEach((d, i) => {
+              if (d === day) {
+                const cell = row.querySelectorAll("td")[i + 1];
+                cell.textContent = scheduleData[employee][day];
+                cell.className = scheduleData[employee][day] ? "tomato" : "eee";
+              }
+            });
+          }
+        });
+      }
+
+      function updateStats() {
+        const statsRow = document.getElementById("statsRow");
+        statsRow.innerHTML = "<td>人数统计</td>";
+
+        const days = ["周一", "周二", "周三", "周四", "周五", "周六", "周日"];
+        days.forEach((day) => {
+          let count = 0;
+          for (let emp in scheduleData) {
+            if (scheduleData[emp][day]) count++;
+          }
+          statsRow.innerHTML += `<td>${count}</td>`;
+        });
+      }
+
+      function renderPopup() {
+        const content = document.getElementById("popup-content");
+
+        let html = `
+        <table style="border-collapse: collapse; width: 100%;">
+          <thead>
+            <tr>
+              <th>员工姓名</th>
+      `;
+
+        workIntervals.forEach((interval) => {
+          html += `<th style="text-align:center;">${interval}</th>`;
+        });
+
+        html += `</tr></thead><tbody>`;
+
+        for (let employee in scheduleData) {
+          html += `<tr><td>${employee}</td>`;
+          const shifts = parseEmployeeShifts(
+            scheduleData[employee][currentDay]
+          );
+
+          workIntervals.forEach((interval) => {
+            const isWorking = shifts.includes(interval);
+            const className = isWorking ? "tomato" : "eee";
+            html += `<td class="${className}" onclick="toggleInterval('${employee}', '${currentDay}', '${interval}')"></td>`;
+          });
+
+          html += `</tr>`;
+        }
+
+        html += `</tbody></table>`;
+        content.innerHTML = html;
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        buildTable();
+        updateStats();
+      });
+    </script>
+  </body>
+</html>

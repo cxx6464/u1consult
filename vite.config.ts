@@ -20,8 +20,14 @@ import { viteMockServe } from 'vite-plugin-mock'
 // https://vitejs.dev/config/
 export default defineConfig({
   server: {
-    port: 80,
-    host: true
+    port: 8080,
+    host: true,
+    proxy: {
+      '/patient': {
+        target: 'https://cp.itheima.net',
+        changeOrigin: true
+      }
+    }
   },
   test: {
     environment: 'happy-dom'
@@ -36,8 +42,11 @@ export default defineConfig({
     createHtmlPlugin(),
     vue(),
     // 样式重复引入，类型声明文件重复了
+    // 默认情况下，我们是将组件放在src/components目录中
     Components({
+      //禁止生成component.d.ts
       dts: false,
+      // UI库搭配使用
       resolvers: [VantResolver({ importStyle: false })]
     }),
     createSvgIconsPlugin({

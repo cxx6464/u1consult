@@ -5,3 +5,4 @@ declare module 'vue-router' {
     title?: string
   }
 }
+// https://juejin.cn/post/7188852961366409272s

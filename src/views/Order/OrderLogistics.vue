@@ -3,6 +3,7 @@ import { getMedicalOrderLogistics } from '@/services/order'
 import type { Location, Logistics } from '@/types/order'
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
+
 import AMapLoader from '@amap/amap-jsapi-loader'
 import startImg from '@/assets/start.png'
 import endImg from '@/assets/end.png'
